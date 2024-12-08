@@ -1,6 +1,7 @@
 package com.myapp.view;
 
 import com.myapp.model.Book;
+import com.myapp.utils.UIStyles;
 import com.myapp.viewmodel.BookViewModel;
 
 import javax.swing.*;
@@ -72,7 +73,7 @@ public class BookAddView extends JFrame {
         descriptionField.setBounds(150, 260, 200, 100);
         add(descriptionField);
 
-        saveButton = new JButton("저장");
+        saveButton = UIStyles.createStyledButton("저장", "#c3ebff", "#22abf3", "#22abf3");
         saveButton.setBounds(100, 400, 80, 30);
         saveButton.addActionListener(e -> {
             if (titleField.getText().isEmpty() || authorField.getText().isEmpty()) {
@@ -105,7 +106,7 @@ public class BookAddView extends JFrame {
 
         add(saveButton);
 
-        cancelButton = new JButton("취소");
+        cancelButton = UIStyles.createStyledButton("취소", "#c3ebff", "#22abf3", "#22abf3");
         cancelButton.setBounds(200, 400, 80, 30);
         cancelButton.addActionListener(e -> dispose());
         add(cancelButton);

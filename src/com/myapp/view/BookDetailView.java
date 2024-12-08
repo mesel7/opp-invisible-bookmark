@@ -1,6 +1,7 @@
 package com.myapp.view;
 
 import com.myapp.model.Book;
+import com.myapp.utils.UIStyles;
 import com.myapp.viewmodel.BookViewModel;
 
 import javax.swing.*;
@@ -58,7 +59,7 @@ public class BookDetailView extends JFrame {
         statusCombo.setBounds(150, 400, 100, 30);
         add(statusCombo);
 
-        saveButton = new JButton("저장");
+        saveButton = UIStyles.createStyledButton("저장", "#c3ebff", "#22abf3", "#22abf3");
         saveButton.setBounds(50, 440, 100, 30);
         saveButton.addActionListener(e -> {
             book.setDescription(descriptionArea.getText());
@@ -70,7 +71,7 @@ public class BookDetailView extends JFrame {
         });
         add(saveButton);
 
-        deleteButton = new JButton("삭제");
+        deleteButton = UIStyles.createStyledButton("삭제", "#c3ebff", "#22abf3", "#22abf3");
         deleteButton.setBounds(200, 440, 100, 30);
         deleteButton.addActionListener(e -> {
             int confirm = JOptionPane.showConfirmDialog(this, "도서를 삭제하시겠습니까?", "삭제 확인", JOptionPane.YES_NO_OPTION);

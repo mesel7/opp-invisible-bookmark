@@ -1,12 +1,11 @@
 package com.myapp.view;
 
 import com.myapp.model.Book;
+import com.myapp.utils.UIStyles;
 import com.myapp.viewmodel.BookViewModel;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
@@ -14,32 +13,79 @@ import java.util.List;
 public class MainView extends JFrame {
     private JTextField searchField;
     private JComboBox<String> searchTypeCombo;
-    private JButton searchButton, addBookButton;
+    private JButton searchButton, resetButton, addBookButton;
     private JPanel bookPanel;
     private BookViewModel bookViewModel;
-    private BookDetailView currentDetailView = null; // 현재 열려있는 상세보기 창을 추적
 
-    // 생성자에서 BookViewModel을 전달받고 초기화
     public MainView(BookViewModel bookViewModel) {
-        this.bookViewModel = bookViewModel;  // bookViewModel 초기화
+        this.bookViewModel = bookViewModel;
         setTitle("도서 목록");
         setSize(800, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
-        // 상단 패널 (검색바)
+        // 상단 패널
         JPanel topPanel = new JPanel();
-        topPanel.setLayout(new FlowLayout());
+        topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.X_AXIS));
+        topPanel.setBackground(Color.WHITE);
+        topPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        searchField = new JTextField(20);
-        searchTypeCombo = new JComboBox<>(new String[]{"제목", "저자"});
-        searchButton = new JButton("검색");
-        addBookButton = new JButton("도서 추가");
+        // 로고 이미지 및 텍스트
+        JLabel logoLabel = new JLabel();
+        ImageIcon originalIcon = new ImageIcon("resources/images/logo.png");
 
+        // 이미지 크기 비율 유지하며 크기 조정
+        Image image = originalIcon.getImage().getScaledInstance(50, 50, Image.SCALE_SMOOTH);
+        logoLabel.setIcon(new ImageIcon(image));
+        logoLabel.setPreferredSize(new Dimension(50, 50));
+
+        JLabel logoTextLabel = new JLabel("보이지 않는 책갈피");
+        logoTextLabel.setFont(logoTextLabel.getFont().deriveFont(Font.BOLD));
+
+        // 검색 필드
+        searchField = UIStyles.createStyledTextField();
+        searchField.setPreferredSize(new Dimension(200, 30));
+        searchField.setMinimumSize(new Dimension(150, 30));
+
+        // 드롭다운
+        searchTypeCombo = UIStyles.createStyledComboBox(new String[]{"제목", "저자"});
+        searchTypeCombo.setPreferredSize(new Dimension(100, 30));
+
+        // 검색 버튼
+        searchButton = UIStyles.createStyledButton("검색", "#c3ebff", "#22abf3", "#22abf3");
+        searchButton.setPreferredSize(new Dimension(100, 30));
+
+        // 초기화 버튼
+        resetButton = UIStyles.createStyledButton("검색 초기화", "#ffffff", "#22abf3", "#22abf3");
+        resetButton.setPreferredSize(new Dimension(120, 30));
+        resetButton.addActionListener(e -> {
+            searchField.setText("");
+            loadBooks(bookViewModel.getBooks());
+        });
+
+        // 도서 추가 버튼
+        addBookButton = UIStyles.createStyledButton("도서 추가", "#c3ebff", "#22abf3", "#22abf3");
+        addBookButton.setPreferredSize(new Dimension(120, 30));
+        addBookButton.addActionListener(e -> {
+            new BookAddView(bookViewModel, this).setVisible(true);
+        });
+
+        // 상단 패널에 컴포넌트 추가
+        topPanel.add(logoLabel);
+        topPanel.add(Box.createHorizontalStrut(15));
+        topPanel.add(logoTextLabel);
+        topPanel.add(Box.createHorizontalStrut(15));
         topPanel.add(searchField);
+        topPanel.add(Box.createHorizontalStrut(15));
         topPanel.add(searchTypeCombo);
+        topPanel.add(Box.createHorizontalStrut(15));
         topPanel.add(searchButton);
+        topPanel.add(Box.createHorizontalStrut(15));
+        topPanel.add(resetButton);
+        topPanel.add(Box.createHorizontalStrut(15));
         topPanel.add(addBookButton);
+
+        // 상단 패널 추가
         add(topPanel, BorderLayout.NORTH);
 
         // 도서 카드 목록
@@ -58,47 +104,106 @@ public class MainView extends JFrame {
             List<Book> results = bookViewModel.searchBooks(query, searchType);
             loadBooks(results);
         });
-
-        // 도서 추가 버튼 액션
-        addBookButton.addActionListener(e -> {
-            new BookAddView(bookViewModel, this).setVisible(true);
-        });
     }
 
     private void loadBooks(List<Book> books) {
-        bookPanel.removeAll(); // 기존 목록 제거
-        bookPanel.setLayout(new BoxLayout(bookPanel, BoxLayout.Y_AXIS)); // 카드들을 세로로 쌓도록 설정
+        bookPanel.removeAll();
+        bookPanel.setLayout(new BoxLayout(bookPanel, BoxLayout.Y_AXIS));
 
         for (Book book : books) {
             JPanel bookCard = new JPanel();
-            bookCard.setLayout(new BoxLayout(bookCard, BoxLayout.Y_AXIS)); // 카드 안의 텍스트도 세로로 배치
-            bookCard.setPreferredSize(new Dimension(300, 250)); // 카드 크기 고정 (너비 300px, 높이 250px)
-            bookCard.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+            bookCard.setLayout(new BorderLayout());
+            bookCard.setPreferredSize(new Dimension(0, 200));
+            bookCard.setMaximumSize(new Dimension(Integer.MAX_VALUE, 200));
+            bookCard.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+            bookCard.setBackground(Color.WHITE);
 
-            // 첫 번째 줄: 책 제목, 저자, 출판사, 출판 연도
-            JPanel titlePanel = new JPanel();
-            titlePanel.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 0)); // 텍스트 간 간격 좁게
-            titlePanel.add(new JLabel("제목: " + book.getTitle()));
-            titlePanel.add(new JLabel("저자: " + book.getAuthor()));
-            titlePanel.add(new JLabel("출판사: " + book.getPublisher()));
-            titlePanel.add(new JLabel("출판연도: " + book.getPublicationYear()));
-
-            // 두 번째 줄: 읽을 예정 상태
-            JLabel statusLabel = new JLabel("상태: " + book.getStatus());
-
-            // 세 번째 줄: 설명 (길면 생략)
-            String description = book.getDescription();
-            if (description.length() > 60) {
-                description = description.substring(0, 60) + "...";
+            // 왼쪽: 책 이미지
+            JLabel imageLabel = new JLabel();
+            imageLabel.setPreferredSize(new Dimension(120, 150)); // 이미지 크기 고정
+            if (book.getImageUrl() != null && !book.getImageUrl().isEmpty()) {
+                ImageIcon bookImage = new ImageIcon(book.getImageUrl());
+                Image scaledImage = bookImage.getImage().getScaledInstance(120, 150, Image.SCALE_SMOOTH);
+                imageLabel.setIcon(new ImageIcon(scaledImage));
+            } else {
+                imageLabel.setText("이미지 없음");
+                imageLabel.setHorizontalAlignment(SwingConstants.CENTER);
+                imageLabel.setVerticalAlignment(SwingConstants.CENTER);
+                imageLabel.setOpaque(true);
+                imageLabel.setBackground(Color.decode("#ececec")); // 회색 배경
+                imageLabel.setForeground(Color.DARK_GRAY); // 텍스트 색상
             }
-            JLabel descriptionLabel = new JLabel("설명: " + description);
+            bookCard.add(imageLabel, BorderLayout.WEST);
 
-            // 카드에 요소 추가
-            bookCard.add(titlePanel);
-            bookCard.add(statusLabel);
-            bookCard.add(descriptionLabel);
+            // 오른쪽: 책 정보
+            JPanel infoPanel = new JPanel();
+            infoPanel.setLayout(new BoxLayout(infoPanel, BoxLayout.Y_AXIS));
+            infoPanel.setBorder(BorderFactory.createEmptyBorder(0, 15, 0, 0)); // 이미지와 간격 (패딩 역할)
+            infoPanel.setBackground(Color.WHITE);
 
-            // 클릭 시 상세 화면 열기
+            // 제목 (크게, 볼드 처리)
+            JLabel titleLabel = new JLabel(book.getTitle());
+            titleLabel.setFont(titleLabel.getFont().deriveFont(Font.BOLD, 18f)); // 큰 글씨와 볼드 처리
+            titleLabel.setAlignmentX(Component.LEFT_ALIGNMENT); // 왼쪽 정렬
+            infoPanel.add(titleLabel);
+            infoPanel.add(Box.createVerticalStrut(10));
+
+            // 저자 | 출판사 | 출판연도
+            String metadata = String.format("%s (지은이) | %s | %s", book.getAuthor(), book.getPublisher(), book.getPublicationYear());
+            JLabel metadataLabel = new JLabel(metadata);
+            metadataLabel.setAlignmentX(Component.LEFT_ALIGNMENT); // 왼쪽 정렬
+            infoPanel.add(metadataLabel);
+            infoPanel.add(Box.createVerticalStrut(10));
+
+            // 읽을 예정 여부
+            JPanel statusPanel = new JPanel();
+            statusPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 0)); // 왼쪽 정렬, 간격 설정
+            statusPanel.setBackground(Color.WHITE);
+            statusPanel.setAlignmentX(Component.LEFT_ALIGNMENT); // 왼쪽 정렬
+
+            // 상태에 따른 아이콘 설정
+            String status = book.getStatus();
+            String iconPath = null;
+            switch (status) {
+                case "읽을 예정":
+                    iconPath = "resources/icons/bookmark-regular.png";
+                    break;
+                case "읽음":
+                    iconPath = "resources/icons/book-solid.png";
+                    break;
+                case "읽는 중":
+                    iconPath = "resources/icons/book-open-solid.png";
+                    break;
+            }
+
+            if (iconPath != null) {
+                ImageIcon statusIcon = new ImageIcon(iconPath);
+                Image scaledIcon = statusIcon.getImage().getScaledInstance(14, 14, Image.SCALE_SMOOTH); // 아이콘 크기 조정
+                JLabel iconLabel = new JLabel(new ImageIcon(scaledIcon));
+                statusPanel.add(iconLabel);
+            }
+
+            JLabel statusLabel = new JLabel(status);
+            statusPanel.add(statusLabel);
+
+            infoPanel.add(statusPanel);
+            infoPanel.add(Box.createVerticalStrut(10));
+
+            // 가로 구분선
+            JSeparator separator = new JSeparator();
+            separator.setBackground(Color.decode("#ececec"));
+            separator.setMaximumSize(new Dimension(Integer.MAX_VALUE, 1)); // 너비 100%로 설정
+            separator.setAlignmentX(Component.LEFT_ALIGNMENT); // 왼쪽 정렬
+            infoPanel.add(separator);
+            infoPanel.add(Box.createVerticalStrut(10)); // 구분선과 다음 항목 간 간격
+
+            // 설명
+            JLabel descriptionLabel = new JLabel(book.getDescription());
+            descriptionLabel.setAlignmentX(Component.LEFT_ALIGNMENT); // 왼쪽 정렬
+            infoPanel.add(descriptionLabel);
+
+            bookCard.add(infoPanel, BorderLayout.CENTER);
+
             bookCard.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
@@ -107,9 +212,7 @@ public class MainView extends JFrame {
             });
 
             bookPanel.add(bookCard);
-
-            // 카드 간의 간격 추가
-            bookPanel.add(Box.createVerticalStrut(20));  // 카드 간 간격
+            bookPanel.add(Box.createVerticalStrut(10));
         }
 
         bookPanel.revalidate();
@@ -118,18 +221,5 @@ public class MainView extends JFrame {
 
     public void updateBookList() {
         loadBooks(bookViewModel.getBooks());
-    }
-
-    private class BookDetailAction implements ActionListener {
-        private Book book;
-
-        public BookDetailAction(Book book) {
-            this.book = book;
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            new BookDetailView(book, bookViewModel, MainView.this).setVisible(true);  // 여기서 bookViewModel을 사용
-        }
     }
 }
