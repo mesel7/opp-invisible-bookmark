@@ -8,6 +8,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.File;
 import java.util.List;
 
 public class MainView extends JFrame {
@@ -120,46 +121,70 @@ public class MainView extends JFrame {
 
             // 왼쪽: 책 이미지
             JLabel imageLabel = new JLabel();
-            imageLabel.setPreferredSize(new Dimension(120, 150)); // 이미지 크기 고정
+            imageLabel.setPreferredSize(new Dimension(120, 150));
+
             if (book.getImageUrl() != null && !book.getImageUrl().isEmpty()) {
-                ImageIcon bookImage = new ImageIcon(book.getImageUrl());
-                Image scaledImage = bookImage.getImage().getScaledInstance(120, 150, Image.SCALE_SMOOTH);
-                imageLabel.setIcon(new ImageIcon(scaledImage));
+                String imagePath = book.getImageUrl().trim();
+                File imageFile = new File(imagePath);
+
+                // 절대 경로로 변환
+                /*
+                if (!imageFile.isAbsolute()) {
+                    // System.getProperty("user.dir")이 현재 실행 파일(.exe)이 위치한 디렉터리를 가리킴
+                    imageFile = new File(System.getProperty("user.dir"), imagePath);
+                    System.out.println(imageFile.getAbsolutePath());
+                }
+                */
+
+                // 이미지 파일이 존재하면 이미지 표시
+                if (imageFile.exists()) {
+                    ImageIcon bookImage = new ImageIcon(imageFile.getAbsolutePath());
+                    Image scaledImage = bookImage.getImage().getScaledInstance(120, 150, Image.SCALE_SMOOTH);
+                    imageLabel.setIcon(new ImageIcon(scaledImage));
+                } else {
+                    imageLabel.setText("이미지 없음");
+                    imageLabel.setHorizontalAlignment(SwingConstants.CENTER);
+                    imageLabel.setVerticalAlignment(SwingConstants.CENTER);
+                    imageLabel.setOpaque(true);
+                    imageLabel.setBackground(Color.decode("#ececec"));
+                    imageLabel.setForeground(Color.DARK_GRAY);
+                }
             } else {
                 imageLabel.setText("이미지 없음");
                 imageLabel.setHorizontalAlignment(SwingConstants.CENTER);
                 imageLabel.setVerticalAlignment(SwingConstants.CENTER);
                 imageLabel.setOpaque(true);
-                imageLabel.setBackground(Color.decode("#ececec")); // 회색 배경
-                imageLabel.setForeground(Color.DARK_GRAY); // 텍스트 색상
+                imageLabel.setBackground(Color.decode("#ececec"));
+                imageLabel.setForeground(Color.DARK_GRAY);
             }
+
             bookCard.add(imageLabel, BorderLayout.WEST);
 
             // 오른쪽: 책 정보
             JPanel infoPanel = new JPanel();
             infoPanel.setLayout(new BoxLayout(infoPanel, BoxLayout.Y_AXIS));
-            infoPanel.setBorder(BorderFactory.createEmptyBorder(0, 15, 0, 0)); // 이미지와 간격 (패딩 역할)
+            infoPanel.setBorder(BorderFactory.createEmptyBorder(0, 15, 0, 0));
             infoPanel.setBackground(Color.WHITE);
 
             // 제목 (크게, 볼드 처리)
             JLabel titleLabel = new JLabel(book.getTitle());
-            titleLabel.setFont(titleLabel.getFont().deriveFont(Font.BOLD, 18f)); // 큰 글씨와 볼드 처리
-            titleLabel.setAlignmentX(Component.LEFT_ALIGNMENT); // 왼쪽 정렬
+            titleLabel.setFont(titleLabel.getFont().deriveFont(Font.BOLD, 18f));
+            titleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
             infoPanel.add(titleLabel);
             infoPanel.add(Box.createVerticalStrut(10));
 
             // 저자 | 출판사 | 출판연도
             String metadata = String.format("%s (지은이) | %s | %s", book.getAuthor(), book.getPublisher(), book.getPublicationYear());
             JLabel metadataLabel = new JLabel(metadata);
-            metadataLabel.setAlignmentX(Component.LEFT_ALIGNMENT); // 왼쪽 정렬
+            metadataLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
             infoPanel.add(metadataLabel);
             infoPanel.add(Box.createVerticalStrut(10));
 
             // 읽을 예정 여부
             JPanel statusPanel = new JPanel();
-            statusPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 0)); // 왼쪽 정렬, 간격 설정
+            statusPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 0));
             statusPanel.setBackground(Color.WHITE);
-            statusPanel.setAlignmentX(Component.LEFT_ALIGNMENT); // 왼쪽 정렬
+            statusPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
             // 상태에 따른 아이콘 설정
             String status = book.getStatus();
@@ -178,7 +203,7 @@ public class MainView extends JFrame {
 
             if (iconPath != null) {
                 ImageIcon statusIcon = new ImageIcon(iconPath);
-                Image scaledIcon = statusIcon.getImage().getScaledInstance(14, 14, Image.SCALE_SMOOTH); // 아이콘 크기 조정
+                Image scaledIcon = statusIcon.getImage().getScaledInstance(14, 14, Image.SCALE_SMOOTH);
                 JLabel iconLabel = new JLabel(new ImageIcon(scaledIcon));
                 statusPanel.add(iconLabel);
             }
@@ -192,14 +217,14 @@ public class MainView extends JFrame {
             // 가로 구분선
             JSeparator separator = new JSeparator();
             separator.setBackground(Color.decode("#ececec"));
-            separator.setMaximumSize(new Dimension(Integer.MAX_VALUE, 1)); // 너비 100%로 설정
-            separator.setAlignmentX(Component.LEFT_ALIGNMENT); // 왼쪽 정렬
+            separator.setMaximumSize(new Dimension(Integer.MAX_VALUE, 1));
+            separator.setAlignmentX(Component.LEFT_ALIGNMENT);
             infoPanel.add(separator);
-            infoPanel.add(Box.createVerticalStrut(10)); // 구분선과 다음 항목 간 간격
+            infoPanel.add(Box.createVerticalStrut(10));
 
             // 설명
             JLabel descriptionLabel = new JLabel(book.getDescription());
-            descriptionLabel.setAlignmentX(Component.LEFT_ALIGNMENT); // 왼쪽 정렬
+            descriptionLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
             infoPanel.add(descriptionLabel);
 
             bookCard.add(infoPanel, BorderLayout.CENTER);

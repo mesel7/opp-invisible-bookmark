@@ -5,7 +5,7 @@ public class Book {
     private String author;
     private String publisher;
     private String isbn;
-    private int publicationYear;
+    private String publicationYear;
     private String genre;
     private String description;
     private String status;
@@ -21,16 +21,8 @@ public class Book {
         return title;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
     public String getAuthor() {
         return author;
-    }
-
-    public void setAuthor(String author) {
-        this.author = author;
     }
 
     public String getPublisher() {
@@ -49,11 +41,11 @@ public class Book {
         this.isbn = isbn;
     }
 
-    public int getPublicationYear() {
+    public String getPublicationYear() {
         return publicationYear;
     }
 
-    public void setPublicationYear(int publicationYear) {
+    public void setPublicationYear(String publicationYear) {
         this.publicationYear = publicationYear;
     }
 

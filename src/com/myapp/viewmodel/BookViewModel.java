@@ -17,16 +17,16 @@ public class BookViewModel {
 
     public void addBook(Book book) {
         books.add(book);
-        saveBooksToFile(); // 파일에 저장
+        saveBooksToFile();
     }
 
     public void updateBook(Book book) {
-        saveBooksToFile(); // 파일에 저장
+        saveBooksToFile();
     }
 
     public void deleteBook(Book book) {
         books.remove(book);
-        saveBooksToFile(); // 파일에 저장
+        saveBooksToFile();
     }
 
     public List<Book> searchBooks(String query, String searchType) {
@@ -48,7 +48,7 @@ public class BookViewModel {
     private void saveBooksToFile() {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
             for (Book book : books) {
-                writer.write(String.format("%s,%s,%s,%s,%d,%s,%s,%s\n",
+                writer.write(String.format("%s,%s,%s,%s,%s,%s,%s,%s,%s\n",
                         book.getTitle(),
                         book.getAuthor(),
                         book.getPublisher(),
@@ -56,7 +56,8 @@ public class BookViewModel {
                         book.getPublicationYear(),
                         book.getGenre(),
                         book.getDescription(),
-                        book.getStatus()
+                        book.getStatus(),
+                        book.getImageUrl()
                 ));
             }
         } catch (IOException e) {
@@ -66,19 +67,33 @@ public class BookViewModel {
 
     private void loadBooksFromFile() {
         File file = new File(filePath);
-        if (!file.exists()) return;
+        if (!file.exists()) {
+            return;
+        }
 
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] data = line.split(",");
-                Book book = new Book(data[0], data[1]);
-                book.setPublisher(data[2]);
-                book.setIsbn(data[3]);
-                book.setPublicationYear(Integer.parseInt(data[4]));
-                book.setGenre(data[5]);
-                book.setDescription(data[6]);
-                book.setStatus(data[7]);
+                // 데이터가 부족하면 기본값 할당
+                String title = data.length > 0 ? data[0] : "";
+                String author = data.length > 1 ? data[1] : "";
+                String publisher = data.length > 2 ? data[2] : "";
+                String isbn = data.length > 3 ? data[3] : "";
+                String publicationYear = data.length > 4 ? data[4] : "";
+                String genre = data.length > 5 ? data[5] : "";
+                String description = data.length > 6 ? data[6] : "";
+                String status = data.length > 7 ? data[7] : "읽을 예정";
+                String imageUrl = data.length > 8 ? data[8] : "";
+
+                Book book = new Book(title, author);
+                book.setPublisher(publisher);
+                book.setIsbn(isbn);
+                book.setPublicationYear(publicationYear);
+                book.setGenre(genre);
+                book.setDescription(description);
+                book.setStatus(status);
+                book.setImageUrl(imageUrl);
                 books.add(book);
             }
         } catch (IOException e) {

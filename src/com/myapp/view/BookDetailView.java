@@ -5,6 +5,7 @@ import com.myapp.utils.UIStyles;
 import com.myapp.viewmodel.BookViewModel;
 
 import javax.swing.*;
+import java.io.File;
 
 public class BookDetailView extends JFrame {
     private JLabel titleLabel, authorLabel, publisherLabel, isbnLabel, yearLabel, genreLabel, descriptionLabel, statusLabel;
@@ -76,6 +77,19 @@ public class BookDetailView extends JFrame {
         deleteButton.addActionListener(e -> {
             int confirm = JOptionPane.showConfirmDialog(this, "도서를 삭제하시겠습니까?", "삭제 확인", JOptionPane.YES_NO_OPTION);
             if (confirm == JOptionPane.YES_OPTION) {
+                // 이미지 파일 삭제
+                String imageUrl = book.getImageUrl();
+                if (imageUrl != null && !imageUrl.isEmpty()) {
+                    File imageFile = new File(imageUrl);
+                    if (imageFile.exists() && imageFile.isFile()) {
+                        if (imageFile.delete()) {
+                            System.out.println("이미지 파일 삭제 성공: " + imageUrl);
+                        } else {
+                            System.err.println("이미지 파일 삭제 실패: " + imageUrl);
+                        }
+                    }
+                }
+
                 bookViewModel.deleteBook(book); // ViewModel에서 삭제
                 JOptionPane.showMessageDialog(this, "도서가 삭제되었습니다.");
                 mainView.updateBookList(); // MainView 갱신
