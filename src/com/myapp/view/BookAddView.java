@@ -2,6 +2,7 @@ package com.myapp.view;
 
 import com.myapp.model.Book;
 import com.myapp.utils.UIStyles;
+import com.myapp.utils.Utils;
 import com.myapp.viewmodel.BookViewModel;
 
 import javax.swing.*;
@@ -22,9 +23,13 @@ public class BookAddView extends JFrame {
     private JSpinner yearSpinner;
     private JPanel imagePreviewPanel;
 
-    public BookAddView(BookViewModel bookViewModel, MainView mainView) {
+    private static BookAddView instance;
+
+    private BookAddView(BookViewModel bookViewModel, MainView mainView) {
+        Utils.playSound("resources/sounds/page_turning.wav");
+
         setTitle("도서 추가");
-        setSize(480, 720);
+        setSize(400, 760);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLayout(null);
         getContentPane().setBackground(Color.WHITE);
@@ -92,13 +97,20 @@ public class BookAddView extends JFrame {
         descriptionLabel = new JLabel("설명:");
         descriptionLabel.setBounds(50, 260, 100, 30);
         add(descriptionLabel);
+        // JTextArea 생성 및 스타일 설정
         descriptionArea = new JTextArea();
-        descriptionArea.setBounds(150, 260, 200, 100);
-        descriptionArea.setLineWrap(true);
-        descriptionArea.setWrapStyleWord(true);
+        descriptionArea.setLineWrap(true); // 줄 바꿈 허용
+        descriptionArea.setWrapStyleWord(true); // 단어 단위로 줄 바꿈
         descriptionArea.setBackground(Color.decode("#ececec"));
         descriptionArea.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        add(descriptionArea);
+
+        // JTextArea를 JScrollPane으로 감싸기
+        JScrollPane scrollPane = new JScrollPane(descriptionArea);
+        scrollPane.setBounds(150, 260, 200, 100);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        add(scrollPane);
 
         // 이미지 미리보기 패널 (기본 회색 박스)
         imagePreviewPanel = new JPanel();
@@ -156,7 +168,7 @@ public class BookAddView extends JFrame {
 
         // 저장 버튼
         saveButton = UIStyles.createStyledButton("저장", "#c3ebff", "#22abf3", "#22abf3");
-        saveButton.setBounds(50, 620, 100, 30);
+        saveButton.setBounds(50, 660, 140, 30);
         saveButton.addActionListener(e -> {
             // 제목과 저자가 비어 있는지 확인
             if (titleField.getText().isEmpty() || authorField.getText().isEmpty()) {
@@ -198,10 +210,18 @@ public class BookAddView extends JFrame {
 
         // 취소 버튼
         cancelButton = UIStyles.createStyledButton("취소", "#ffffff", "#22abf3", "#22abf3");
-        cancelButton.setBounds(200, 620, 100, 30);
+        cancelButton.setBounds(210, 660, 140, 30);
         cancelButton.addActionListener(e -> {
             dispose();
         });
         add(cancelButton);
+    }
+
+    // 싱글톤 인스턴스 반환
+    public static BookAddView getInstance(BookViewModel bookViewModel, MainView mainView) {
+        if (instance == null || !instance.isVisible()) { // 기존 창이 닫혀 있으면 새로 생성
+            instance = new BookAddView(bookViewModel, mainView);
+        }
+        return instance;
     }
 }

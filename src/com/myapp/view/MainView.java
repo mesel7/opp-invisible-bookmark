@@ -68,7 +68,10 @@ public class MainView extends JFrame {
         addBookButton = UIStyles.createStyledButton("도서 추가", "#c3ebff", "#22abf3", "#22abf3");
         addBookButton.setPreferredSize(new Dimension(120, 30));
         addBookButton.addActionListener(e -> {
-            new BookAddView(bookViewModel, this).setVisible(true);
+            // 기존 인스턴스가 열려 있으면 포커스 설정
+            BookAddView bookAddView = BookAddView.getInstance(bookViewModel, this);
+            bookAddView.setVisible(true);
+            bookAddView.toFront(); // 창을 최상위로 이동
         });
 
         // 상단 패널에 컴포넌트 추가
@@ -142,20 +145,28 @@ public class MainView extends JFrame {
                     Image scaledImage = bookImage.getImage().getScaledInstance(120, 150, Image.SCALE_SMOOTH);
                     imageLabel.setIcon(new ImageIcon(scaledImage));
                 } else {
-                    imageLabel.setText("이미지 없음");
-                    imageLabel.setHorizontalAlignment(SwingConstants.CENTER);
-                    imageLabel.setVerticalAlignment(SwingConstants.CENTER);
-                    imageLabel.setOpaque(true);
-                    imageLabel.setBackground(Color.decode("#ececec"));
-                    imageLabel.setForeground(Color.DARK_GRAY);
+                    // 이미지가 없으면 기본 이미지 표시
+                    String defaultImagePath = "resources/images/book_default.png";
+                    File defaultImageFile = new File(defaultImagePath);
+                    ImageIcon defaultBookImage = new ImageIcon(defaultImageFile.getAbsolutePath());
+                    Image scaledDefaultImage = defaultBookImage.getImage().getScaledInstance(120, 150, Image.SCALE_SMOOTH);
+                    imageLabel.setIcon(new ImageIcon(scaledDefaultImage));
                 }
             } else {
+                String defaultImagePath = "resources/images/book_default.png";
+                File defaultImageFile = new File(defaultImagePath);
+                ImageIcon defaultBookImage = new ImageIcon(defaultImageFile.getAbsolutePath());
+                Image scaledDefaultImage = defaultBookImage.getImage().getScaledInstance(120, 150, Image.SCALE_SMOOTH);
+                imageLabel.setIcon(new ImageIcon(scaledDefaultImage));
+
+                /*
                 imageLabel.setText("이미지 없음");
                 imageLabel.setHorizontalAlignment(SwingConstants.CENTER);
                 imageLabel.setVerticalAlignment(SwingConstants.CENTER);
                 imageLabel.setOpaque(true);
                 imageLabel.setBackground(Color.decode("#ececec"));
                 imageLabel.setForeground(Color.DARK_GRAY);
+                */
             }
 
             bookCard.add(imageLabel, BorderLayout.WEST);
@@ -232,7 +243,7 @@ public class MainView extends JFrame {
             bookCard.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
-                    new BookDetailView(book, bookViewModel, MainView.this).setVisible(true);
+                    BookDetailView.getInstance(book, bookViewModel, MainView.this).setVisible(true);
                 }
             });
 

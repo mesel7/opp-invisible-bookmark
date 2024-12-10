@@ -35,15 +35,16 @@ public class UIStyles {
             public void mouseEntered(java.awt.event.MouseEvent e) {
                 button.setBackground(Color.decode(hoverColor));
                 button.setForeground(Color.white);
+                button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
             }
 
             @Override
             public void mouseExited(java.awt.event.MouseEvent e) {
                 button.setBackground(Color.decode(bgColor));
                 button.setForeground(Color.decode(fgColor));
+                button.setCursor(Cursor.getDefaultCursor());
             }
         });
-
         return button;
     }
 }
