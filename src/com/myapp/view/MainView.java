@@ -2,13 +2,13 @@ package com.myapp.view;
 
 import com.myapp.model.Book;
 import com.myapp.utils.UIStyles;
+import com.myapp.utils.Utils;
 import com.myapp.viewmodel.BookViewModel;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.File;
 import java.util.List;
 
 public class MainView extends JFrame {
@@ -33,7 +33,7 @@ public class MainView extends JFrame {
 
         // 로고 이미지 및 텍스트
         JLabel logoLabel = new JLabel();
-        ImageIcon originalIcon = new ImageIcon("resources/images/logo.png");
+        ImageIcon originalIcon = new ImageIcon(getClass().getResource("/images/logo.png"));
 
         // 이미지 크기 비율 유지하며 크기 조정
         Image image = originalIcon.getImage().getScaledInstance(50, 50, Image.SCALE_SMOOTH);
@@ -126,48 +126,7 @@ public class MainView extends JFrame {
             JLabel imageLabel = new JLabel();
             imageLabel.setPreferredSize(new Dimension(120, 150));
 
-            if (book.getImageUrl() != null && !book.getImageUrl().isEmpty()) {
-                String imagePath = book.getImageUrl().trim();
-                File imageFile = new File(imagePath);
-
-                // 절대 경로로 변환
-                /*
-                if (!imageFile.isAbsolute()) {
-                    // System.getProperty("user.dir")이 현재 실행 파일(.exe)이 위치한 디렉터리를 가리킴
-                    imageFile = new File(System.getProperty("user.dir"), imagePath);
-                    System.out.println(imageFile.getAbsolutePath());
-                }
-                */
-
-                // 이미지 파일이 존재하면 이미지 표시
-                if (imageFile.exists()) {
-                    ImageIcon bookImage = new ImageIcon(imageFile.getAbsolutePath());
-                    Image scaledImage = bookImage.getImage().getScaledInstance(120, 150, Image.SCALE_SMOOTH);
-                    imageLabel.setIcon(new ImageIcon(scaledImage));
-                } else {
-                    // 이미지가 없으면 기본 이미지 표시
-                    String defaultImagePath = "resources/images/book_default.png";
-                    File defaultImageFile = new File(defaultImagePath);
-                    ImageIcon defaultBookImage = new ImageIcon(defaultImageFile.getAbsolutePath());
-                    Image scaledDefaultImage = defaultBookImage.getImage().getScaledInstance(120, 150, Image.SCALE_SMOOTH);
-                    imageLabel.setIcon(new ImageIcon(scaledDefaultImage));
-                }
-            } else {
-                String defaultImagePath = "resources/images/book_default.png";
-                File defaultImageFile = new File(defaultImagePath);
-                ImageIcon defaultBookImage = new ImageIcon(defaultImageFile.getAbsolutePath());
-                Image scaledDefaultImage = defaultBookImage.getImage().getScaledInstance(120, 150, Image.SCALE_SMOOTH);
-                imageLabel.setIcon(new ImageIcon(scaledDefaultImage));
-
-                /*
-                imageLabel.setText("이미지 없음");
-                imageLabel.setHorizontalAlignment(SwingConstants.CENTER);
-                imageLabel.setVerticalAlignment(SwingConstants.CENTER);
-                imageLabel.setOpaque(true);
-                imageLabel.setBackground(Color.decode("#ececec"));
-                imageLabel.setForeground(Color.DARK_GRAY);
-                */
-            }
+            Utils.setBookImage(imageLabel, book.getImageUrl(), 120, 150); // 이미지 설정
 
             bookCard.add(imageLabel, BorderLayout.WEST);
 
@@ -199,25 +158,7 @@ public class MainView extends JFrame {
 
             // 상태에 따른 아이콘 설정
             String status = book.getStatus();
-            String iconPath = null;
-            switch (status) {
-                case "읽을 예정":
-                    iconPath = "resources/icons/bookmark-regular.png";
-                    break;
-                case "읽음":
-                    iconPath = "resources/icons/book-solid.png";
-                    break;
-                case "읽는 중":
-                    iconPath = "resources/icons/book-open-solid.png";
-                    break;
-            }
-
-            if (iconPath != null) {
-                ImageIcon statusIcon = new ImageIcon(iconPath);
-                Image scaledIcon = statusIcon.getImage().getScaledInstance(14, 14, Image.SCALE_SMOOTH);
-                JLabel iconLabel = new JLabel(new ImageIcon(scaledIcon));
-                statusPanel.add(iconLabel);
-            }
+            Utils.setBookStatusIcon(statusPanel, status); // 상태에 따른 아이콘 설정
 
             JLabel statusLabel = new JLabel(status);
             statusPanel.add(statusLabel);

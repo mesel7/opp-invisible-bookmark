@@ -6,13 +6,15 @@ import com.myapp.utils.Utils;
 import com.myapp.viewmodel.BookViewModel;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.UUID;
 
 public class BookAddView extends JFrame {
     private JLabel titleLabel, authorLabel, publisherLabel, isbnLabel, yearLabel, genreLabel, descriptionLabel;
@@ -26,7 +28,7 @@ public class BookAddView extends JFrame {
     private static BookAddView instance;
 
     private BookAddView(BookViewModel bookViewModel, MainView mainView) {
-        Utils.playSound("resources/sounds/page_turning.wav");
+        Utils.playSound("/sounds/page_turning.wav");
 
         setTitle("도서 추가");
         setSize(400, 760);
@@ -127,6 +129,8 @@ public class BookAddView extends JFrame {
         // 이미지 업로드 버튼
         uploadImageButton = UIStyles.createStyledButton("이미지 업로드", "#c3ebff", "#22abf3", "#22abf3");
         uploadImageButton.setBounds(150, 580, 200, 30);
+        uploadImageButton = UIStyles.createStyledButton("이미지 업로드", "#c3ebff", "#22abf3", "#22abf3");
+        uploadImageButton.setBounds(150, 580, 200, 30);
         uploadImageButton.addActionListener(e -> {
             JFileChooser fileChooser = new JFileChooser();
             fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
@@ -138,18 +142,9 @@ public class BookAddView extends JFrame {
                 File file = fileChooser.getSelectedFile();
                 imagePath = file.getAbsolutePath(); // 선택한 이미지 경로 저장
 
-                // 이미지를 images 폴더로 복사
                 try {
-                    File destinationDir = new File("images");
-                    // images 폴더가 없으면 생성
-                    if (!destinationDir.exists()) {
-                        destinationDir.mkdir();
-                    }
-                    File destinationFile = new File(destinationDir, file.getName());
-                    Files.copy(file.toPath(), destinationFile.toPath());
-
                     // 선택된 이미지 미리보기
-                    ImageIcon imageIcon = new ImageIcon(destinationFile.getAbsolutePath());
+                    ImageIcon imageIcon = new ImageIcon(imagePath);
                     Image image = imageIcon.getImage().getScaledInstance(200, 200, Image.SCALE_SMOOTH);
                     imageIcon = new ImageIcon(image);
 
@@ -159,8 +154,9 @@ public class BookAddView extends JFrame {
                     imagePreviewPanel.add(imageLabel, BorderLayout.CENTER);
                     imagePreviewPanel.revalidate();
                     imagePreviewPanel.repaint();
-                } catch (IOException ex) {
+                } catch (Exception ex) {
                     ex.printStackTrace();
+                    JOptionPane.showMessageDialog(this, "이미지 미리보기 오류가 발생했습니다");
                 }
             }
         });
@@ -169,8 +165,12 @@ public class BookAddView extends JFrame {
         // 저장 버튼
         saveButton = UIStyles.createStyledButton("저장", "#c3ebff", "#22abf3", "#22abf3");
         saveButton.setBounds(50, 660, 140, 30);
+        saveButton = UIStyles.createStyledButton("저장", "#c3ebff", "#22abf3", "#22abf3");
+        saveButton.setBounds(50, 660, 140, 30);
+        saveButton = UIStyles.createStyledButton("저장", "#c3ebff", "#22abf3", "#22abf3");
+        saveButton.setBounds(50, 660, 140, 30);
         saveButton.addActionListener(e -> {
-            // 제목과 저자가 비어 있는지 확인
+            // 사용자 입력값 확인
             if (titleField.getText().isEmpty() || authorField.getText().isEmpty()) {
                 JOptionPane.showMessageDialog(this, "제목과 저자는 필수 입력 사항입니다");
                 return;
@@ -181,7 +181,7 @@ public class BookAddView extends JFrame {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy");
             String formattedYear = sdf.format(selectedDate);
 
-            // Book 객체 생성 및 저장
+            // Book 객체 생성
             Book newBook = new Book(
                     titleField.getText(),
                     authorField.getText()
@@ -192,19 +192,54 @@ public class BookAddView extends JFrame {
             newBook.setGenre(genreField.getText());
             newBook.setDescription(descriptionArea.getText());
 
-            // 선택한 이미지가 있는 경우 상대 경로로 이미지 저장
-            if (imagePath.isEmpty()) {
-                newBook.setImageUrl("");
-            } else {
-                newBook.setImageUrl("images/" + new File(imagePath).getName());
-            }
+            // 이미지 저장 작업을 비동기로 처리
+            SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
+                @Override
+                protected Void doInBackground() throws Exception {
+                    // 선택한 이미지가 있는 경우 상대 경로로 이미지 저장
+                    if (imagePath.isEmpty()) {
+                        System.out.println("이미지 없음");
+                        newBook.setImageUrl("");
+                    } else {
+                        // 원래 파일 확장자 가져오기
+                        String originalExtension = imagePath.substring(imagePath.lastIndexOf("."));
 
-            bookViewModel.addBook(newBook);
-            JOptionPane.showMessageDialog(this, "도서가 저장되었습니다");
+                        // UUID로 고유한 이름 생성
+                        String uniqueFileName = UUID.randomUUID().toString() + originalExtension;
 
-            // MainView 갱신
-            mainView.updateBookList();
-            dispose();
+                        // 파일을 'images' 폴더에 저장
+                        File imagesFolder = new File("images");
+                        if (!imagesFolder.exists()) {
+                            System.out.println("이미지 폴더가 없어서 새로 생성");
+                            imagesFolder.mkdir();
+                        }
+
+                        File destinationFile = new File(imagesFolder, uniqueFileName);
+                        try {
+                            Files.copy(new File(imagePath).toPath(), destinationFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                            newBook.setImageUrl("images/" + uniqueFileName); // 책 객체에 상대 경로 저장
+                        } catch (IOException ex) {
+                            ex.printStackTrace();
+                            JOptionPane.showMessageDialog(BookAddView.this, "이미지 저장 중 오류가 발생했습니다");
+                            newBook.setImageUrl(""); // 오류 발생 시 빈 값 저장
+                        }
+                    }
+                    return null;
+                }
+
+                @Override
+                protected void done() {
+                    // 비동기 작업 완료 후 Book 추가
+                    bookViewModel.addBook(newBook);
+                    JOptionPane.showMessageDialog(BookAddView.this, "도서가 저장되었습니다");
+
+                    // MainView 갱신
+                    mainView.updateBookList();
+                    dispose();
+                }
+            };
+
+            worker.execute();  // 비동기 작업 시작
         });
         add(saveButton);
 

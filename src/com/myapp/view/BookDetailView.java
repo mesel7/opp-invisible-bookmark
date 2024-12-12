@@ -18,7 +18,7 @@ public class BookDetailView extends JFrame {
     private static BookDetailView instance;
 
     private BookDetailView(Book book, BookViewModel bookViewModel, MainView mainView) {
-        Utils.playSound("resources/sounds/page_turning.wav");
+        Utils.playSound("/sounds/page_turning.wav");
 
         setTitle("도서 상세");
         setSize(400, 880);
@@ -35,41 +35,8 @@ public class BookDetailView extends JFrame {
         JLabel imageLabel = new JLabel();
         imageLabel.setPreferredSize(new Dimension(300, 375)); // 크기 설정
 
-        // 이미지가 있을 때
-        if (book.getImageUrl() != null && !book.getImageUrl().isEmpty()) {
-            String imagePath = book.getImageUrl().trim();
-            File imageFile = new File(imagePath);
-
-            // 이미지 파일이 존재하면 이미지 표시
-            if (imageFile.exists()) {
-                ImageIcon bookImage = new ImageIcon(imageFile.getAbsolutePath());
-                Image scaledImage = bookImage.getImage().getScaledInstance(300, 375, Image.SCALE_SMOOTH);
-                imageLabel.setIcon(new ImageIcon(scaledImage));
-            } else {
-                // 이미지가 없으면 기본 이미지 표시
-                String defaultImagePath = "resources/images/book_default.png";
-                File defaultImageFile = new File(defaultImagePath);
-                ImageIcon defaultBookImage = new ImageIcon(defaultImageFile.getAbsolutePath());
-                Image scaledDefaultImage = defaultBookImage.getImage().getScaledInstance(300, 375, Image.SCALE_SMOOTH);
-                imageLabel.setIcon(new ImageIcon(scaledDefaultImage));
-            }
-        } else {
-            // 이미지가 없으면 기본 이미지 표시
-            String defaultImagePath = "resources/images/book_default.png";
-            File defaultImageFile = new File(defaultImagePath);
-            ImageIcon defaultBookImage = new ImageIcon(defaultImageFile.getAbsolutePath());
-            Image scaledDefaultImage = defaultBookImage.getImage().getScaledInstance(300, 375, Image.SCALE_SMOOTH);
-            imageLabel.setIcon(new ImageIcon(scaledDefaultImage));
-
-            /*
-            imageLabel.setText("이미지 없음");
-            imageLabel.setHorizontalAlignment(SwingConstants.CENTER);
-            imageLabel.setVerticalAlignment(SwingConstants.CENTER);
-            imageLabel.setOpaque(true);
-            imageLabel.setBackground(Color.decode("#ececec"));
-            imageLabel.setForeground(Color.DARK_GRAY);
-            */
-        }
+        // Utils 클래스를 활용해 이미지 설정
+        Utils.setBookImage(imageLabel, book.getImageUrl(), 300, 375);
 
         // 위치 및 크기 설정
         imageLabel.setBounds(50, 50, 300, 375); // 위치와 크기 설정
